@@ -2,23 +2,19 @@ name: Genera e pubblica RSS
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # ogni 30 minuti
+    - cron: '*/30 * * * *'
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
@@ -30,28 +26,10 @@ jobs:
         run: |
           python FeedRSS.py
 
-      - name: Prepara i file da pubblicare
-        run: |
-          mkdir pubblica
-          mv circolari.xml pubblica/
-
-      - name: Carica i file statici per GitHub Pages
-        uses: actions/upload-pages-artifact@v2
+      - name: Deploy su GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: pubblica/
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Distribuisci su GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./  # se il file circolari.xml è nella root, o cambialo
+          publish_branch: gh-pages
+          # Opzionale: path di base, ecc.
