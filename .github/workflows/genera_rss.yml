@@ -2,7 +2,7 @@ name: Genera RSS
 
 on:
   schedule:
-    - cron: '0 7 * * *'  # ogni giorno alle 7:00 UTC (9:00 italiane)
+    - cron: '*/30 * * * *'  # ogni 30 minuti
   workflow_dispatch:
 
 jobs:
