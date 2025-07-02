@@ -1,3 +1,5 @@
-requests
-beautifulsoup4
-feedgen
+requests~=2.32.4
+beautifulsoup4~=4.13.4
+feedgen~=1.0.0
+urllib3~=2.5.0
+bs4~=0.0.2
