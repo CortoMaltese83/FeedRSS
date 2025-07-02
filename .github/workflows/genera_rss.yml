@@ -9,6 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read # Necessary for checkout action
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -26,10 +29,39 @@ jobs:
         run: |
           python FeedRSS.py
 
-      - name: Deploy su GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./  # se il file circolari.xml è nella root, o cambialo
-          publish_branch: gh-pages
-          # Opzionale: path di base, ecc.
+      - name: Configure Git for target repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Clone target gh-pages branch and update file
+        run: |
+          # Define variables for clarity
+          # This is the repository where your GitHub Pages are hosted
+          TARGET_REPO="CortoMaltese83/CortoMaltese83.github.io"
+          # The branch that serves your GitHub Pages (usually 'main' or 'master' for user/org pages)
+          # For user/organization pages, the default branch (main/master) is usually the source.
+          # If you have a 'gh-pages' branch in CortoMaltese83.github.io, use that.
+          # Based on the screenshot, CortoMaltese83.github.io is the repository itself,
+          # so it likely serves from 'main' or 'master'. Let's assume 'main' for now.
+          TARGET_BRANCH="main" # <--- IMPORTANT: Adjust this if your GitHub Pages are served from 'master' or 'gh-pages'
+          XML_FILE="circolari.xml"
+
+          # Clone the target repository's branch into a temporary directory
+          git clone --branch $TARGET_BRANCH "https://x-access-token:${{ secrets.GH_PAGES_TOKEN }}@github.com/$TARGET_REPO.git" deploy_temp
+
+          # Navigate into the cloned directory
+          cd deploy_temp
+
+          # Copy the newly generated circolari.xml from the source repo's root
+          # The source repo's root is one level up from deploy_temp
+          cp ../$XML_FILE .
+
+          # Add the file, commit, and push
+          git add $XML_FILE
+          git commit -m "Update $XML_FILE from FeedRSS workflow" || echo "No changes to commit" # '|| echo "No changes..."' to prevent failure if no changes
+          git push origin $TARGET_BRANCH
+        env:
+          # Set the environment variable for the PAT within this step
+          # This ensures the token is available for the git commands
+          GH_PAGES_TOKEN: ${{ secrets.GH_PAGES_TOKEN }} # Ensure this matches the secret name
