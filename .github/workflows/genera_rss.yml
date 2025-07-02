@@ -14,11 +14,11 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout del repository
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.9'
 
@@ -30,13 +30,13 @@ jobs:
         run: |
           python FeedRSS.py
 
-      - name: Prepara i file per Pages
+      - name: Prepara i file da pubblicare
         run: |
           mkdir pubblica
           mv circolari.xml pubblica/
 
-      - name: Carica i file da pubblicare
-        uses: actions/upload-pages-artifact@v1
+      - name: Carica i file statici per GitHub Pages
+        uses: actions/upload-pages-artifact@v2
         with:
           path: pubblica/
 
@@ -54,4 +54,4 @@ jobs:
     steps:
       - name: Distribuisci su GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
